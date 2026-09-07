@@ -447,26 +447,37 @@ class JobWatchApp:
         scrollbar.pack(side="right", fill="y")
 
         ttk.Label(right, text="Aperçu de l'annonce :").pack(anchor="w", padx=4, pady=(4, 0))
+        self.preview = None
+        preview_error = None
         if HtmlFrame is not None:
-            self.preview = HtmlFrame(
-                right, messages_enabled=False, threading_enabled=True
-            )
+            try:
+                self.preview = HtmlFrame(
+                    right, messages_enabled=False, threading_enabled=True
+                )
+            except Exception as exc:  # ex: Tkhtml non compilé pour Tcl/Tk 9
+                preview_error = str(exc)
+        if self.preview is not None:
             self.preview.pack(fill="both", expand=True, padx=4, pady=4)
             self.preview.load_html(
                 "<p style='font-family:sans-serif;color:gray;padding:1em'>"
                 "Cliquez sur une offre pour afficher son aperçu ici.</p>"
             )
         else:
-            self.preview = None
+            message = (
+                "Aperçu intégré indisponible.\n"
+                "Installez-le avec : pip install tkinterweb\n"
+                "En attendant, utilisez \"Ouvrir en grand\"."
+                if not preview_error
+                else (
+                    "Aperçu intégré indisponible sur cette installation de "
+                    "Python (composant tkinterweb incompatible avec votre "
+                    "version de Tcl/Tk) :\n"
+                    f"{preview_error}\n\n"
+                    "Utilisez \"Ouvrir en grand\" à la place."
+                )
+            )
             ttk.Label(
-                right,
-                text=(
-                    "Aperçu intégré indisponible.\n"
-                    "Installez-le avec : pip install tkinterweb\n"
-                    "En attendant, utilisez \"Ouvrir en grand\"."
-                ),
-                foreground="gray",
-                justify="left",
+                right, text=message, foreground="gray", justify="left", wraplength=350
             ).pack(padx=12, pady=12, anchor="nw")
 
     def _on_select_result(self, _event=None) -> None:
