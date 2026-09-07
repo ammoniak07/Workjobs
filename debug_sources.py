@@ -27,22 +27,33 @@ print("=" * 70)
 print("LE FOREM")
 print("=" * 70)
 url = "https://leforem-digitalwallonia.opendatasoft.com/api/records/1.0/search/"
-params = {"dataset": "offres-d-emploi-forem", "q": f"{MOTS_CLES} {LIEU}", "rows": 3}
-try:
-    r = requests.get(url, params=params, headers=HEADERS, timeout=20)
-    print("URL appelée :", r.url)
-    print("Statut :", r.status_code)
-    data = r.json()
-    print("Nombre total (nhits) :", data.get("nhits"))
-    print("Nombre de records reçus :", len(data.get("records", [])))
-    if data.get("records"):
-        print("\nPremier record complet (fields) :")
-        print(json.dumps(data["records"][0].get("fields", {}), ensure_ascii=False, indent=2))
-    else:
-        print("\nRéponse brute complète (tronquée à 1500 caractères) :")
-        print(json.dumps(data, ensure_ascii=False)[:1500])
-except Exception as exc:
-    print("ERREUR :", exc)
+
+
+def try_query(label: str, q: str) -> None:
+    params = {"dataset": "offres-d-emploi-forem", "q": q, "rows": 2}
+    try:
+        r = requests.get(url, params=params, headers=HEADERS, timeout=20)
+        print(f"\n--- {label} ---")
+        print("URL appelée :", r.url)
+        print("Statut :", r.status_code)
+        data = r.json()
+        print("Nombre total (nhits) :", data.get("nhits"))
+        if data.get("records"):
+            print("Premier record complet (fields) :")
+            print(
+                json.dumps(
+                    data["records"][0].get("fields", {}), ensure_ascii=False, indent=2
+                )
+            )
+        else:
+            print("Réponse brute (tronquée) :", json.dumps(data, ensure_ascii=False)[:500])
+    except Exception as exc:
+        print(f"ERREUR ({label}) :", exc)
+
+
+try_query("q vide (juste pour voir la taille totale du dataset)", "")
+try_query("q = 'python' seul", "python")
+try_query("q = mots-clés + lieu combinés (ce que fait le script normalement)", f"{MOTS_CLES} {LIEU}")
 
 print()
 print("=" * 70)
