@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Workjobs</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="config">Recherche &amp; sites</button>
+    <button class="tab-btn" data-tab="results">Résultats</button>
+  </div>
+
+  <section id="tab-config" class="tab-content active">
+    <fieldset>
+      <legend>Recherche</legend>
+      <label>Poste recherché
+        <input type="text" id="f-mots-cles">
+      </label>
+      <label>Région / ville
+        <input type="text" id="f-lieu">
+      </label>
+      <label>Type de contrat (optionnel)
+        <input type="text" id="f-type-contrat">
+      </label>
+      <label>Résultats max. par site
+        <input type="number" id="f-max-resultats" min="1" max="100" value="20">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sites intégrés</legend>
+      <label class="checkbox"><input type="checkbox" id="f-leforem"> Le Forem</label>
+      <label class="checkbox">
+        <input type="checkbox" id="f-indeed"> Indeed
+        <input type="text" id="f-indeed-domaine" placeholder="fr.indeed.com" class="inline">
+        <span class="hint">(ex: fr.indeed.com ou be.indeed.com)</span>
+      </label>
+      <label class="checkbox"><input type="checkbox" id="f-linkedin"> LinkedIn</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sites personnalisés</legend>
+      <table id="custom-sites-table">
+        <thead><tr><th>Nom</th><th>Actif</th><th>URL de recherche</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button id="btn-add-site" type="button">Ajouter...</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Vos informations</legend>
+      <div class="grid2">
+        <label>Nom
+          <input type="text" id="f-nom">
+        </label>
+        <label>Email
+          <input type="text" id="f-email">
+        </label>
+        <label>Téléphone
+          <input type="text" id="f-telephone">
+        </label>
+        <label>CV (PDF)
+          <span class="filerow">
+            <input type="text" id="f-cv-path" readonly>
+            <button id="btn-browse-cv" type="button">Importer un CV...</button>
+          </span>
+        </label>
+      </div>
+      <label>Paragraphe de motivation par défaut
+        <span class="hint block">Utilisé dans chaque brouillon à la place du texte à compléter.
+          Vous pouvez toujours l'adapter offre par offre en éditant le fichier .eml généré.</span>
+        <textarea id="f-motivation" rows="4"></textarea>
+      </label>
+    </fieldset>
+
+    <div class="actions">
+      <button id="btn-save-config" type="button">Enregistrer la configuration</button>
+      <button id="btn-search" type="button">Lancer la recherche</button>
+      <span id="status-text" class="status"></span>
+    </div>
+  </section>
+
+  <section id="tab-results" class="tab-content">
+    <div class="split">
+      <div class="results-list">
+        <table id="results-table">
+          <thead><tr><th>Source</th><th>Poste</th><th>Entreprise</th><th>Lieu</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="actions">
+          <button id="btn-clear-results" type="button">Vider les résultats</button>
+          <button id="btn-reset-history" type="button">Réinitialiser l'historique</button>
+          <button id="btn-open-drafts" type="button">Ouvrir le dossier des brouillons</button>
+        </div>
+
+        <h4>Journal</h4>
+        <pre id="log"></pre>
+      </div>
+      <div class="preview-pane">
+        <div class="preview-header">
+          <span>Aperçu de l'annonce</span>
+          <button id="btn-open-full" type="button" disabled>Ouvrir en grand</button>
+        </div>
+        <iframe id="preview-frame" src="about:blank"></iframe>
+        <p class="hint">Certains sites empêchent l'affichage en aperçu (protection anti-cadrage) :
+          utilisez "Ouvrir en grand" dans ce cas.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="site-dialog" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="site-dialog-title">Site personnalisé</h3>
+      <label>Nom du site<input type="text" id="sd-nom"></label>
+      <label>URL de recherche (utilisez {mots_cles} et {lieu})<input type="text" id="sd-url"></label>
+      <label>URL de base (pour les liens relatifs, optionnel)<input type="text" id="sd-base-url"></label>
+      <label>Sélecteur CSS d'une offre (obligatoire)<input type="text" id="sd-carte"></label>
+      <label>Sélecteur CSS du titre du poste<input type="text" id="sd-titre"></label>
+      <label>Sélecteur CSS de l'entreprise (optionnel)<input type="text" id="sd-entreprise"></label>
+      <label>Sélecteur CSS du lieu (optionnel)<input type="text" id="sd-lieu"></label>
+      <label>Sélecteur CSS du lien vers l'offre (défaut : a)<input type="text" id="sd-lien"></label>
+      <label class="checkbox"><input type="checkbox" id="sd-active" checked> Actif</label>
+      <div class="actions">
+        <button id="sd-save" type="button">Enregistrer</button>
+        <button id="sd-cancel" type="button">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

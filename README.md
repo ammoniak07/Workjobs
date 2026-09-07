@@ -27,27 +27,42 @@ zone géographique, et les sources à activer.
 
 ## Utilisation
 
-### Interface graphique (recommandé)
+### Interface graphique — version pywebview (recommandé)
+
+```bash
+pip install pywebview
+python -m job_watch.webapp
+```
+
+Sous Windows, un double-clic sur `run_webgui.bat` fait la même chose.
+Comme NovaVox, toute l'interface est affichée dans une fenêtre pywebview
+(un vrai navigateur Edge/Chromium) : l'onglet **Recherche & sites**
+permet de saisir le poste recherché, la région, le type de contrat,
+d'activer/désactiver Le Forem, Indeed et LinkedIn, et d'**ajouter vos
+propres sites** (bouton "Ajouter..." dans "Sites personnalisés" — voir
+ci-dessous). L'onglet **Résultats** liste les offres à gauche ; cliquez
+sur une offre pour afficher son **aperçu en direct dans une iframe** à
+droite (JavaScript géré correctement, contrairement à la version
+Tkinter ci-dessous), et "Ouvrir en grand" pour l'afficher en plein
+format dans une fenêtre séparée. Chaque ligne a ses propres boutons
+"Brouillon" et "Ignorer".
+
+Note : certains sites bloquent volontairement l'affichage en iframe
+(protection anti-cadrage, ex. LinkedIn) — l'aperçu reste alors vide,
+utilisez "Ouvrir en grand" dans ce cas.
+
+### Interface graphique — version Tkinter (alternative, sans dépendance)
 
 ```bash
 python -m job_watch.gui
 ```
 
-Sous Windows, un double-clic sur `run_gui.bat` fait la même chose. L'onglet
-**Recherche & sites** permet de saisir le poste recherché, la région, le
-type de contrat, d'activer/désactiver Le Forem, Indeed et LinkedIn, et
-d'**ajouter vos propres sites** (bouton "Ajouter..." dans "Sites
-personnalisés" — voir ci-dessous). L'onglet **Résultats** liste les offres
-trouvées à gauche ; cliquez sur une offre pour afficher son aperçu dans le
-panneau de droite. Ce panneau essaie, dans l'ordre : un vrai navigateur
-Edge intégré (nécessite `pip install pywebview pywin32`, Windows
-uniquement — gère le JavaScript, donc les sites modernes s'affichent
-correctement), puis un moteur HTML léger sans JavaScript (`pip install
-tkinterweb`), puis un simple message si aucun des deux n'est disponible.
-Le bouton "Ouvrir en grand" affiche l'offre en plein format dans une
-fenêtre séparée (utilise aussi pywebview, sinon ouvre votre navigateur
-par défaut). Sélectionnez une ou plusieurs offres puis cliquez
-sur "Préparer un brouillon" ou "Ignorer".
+Sous Windows, un double-clic sur `run_gui.bat` fait la même chose. Mêmes
+fonctionnalités que ci-dessus (Tkinter est inclus avec Python, aucune
+installation requise), mais l'aperçu intégré dépend de bibliothèques
+tierces plus fragiles (`tkinterweb`, sans JavaScript, et actuellement
+incompatible avec Tcl/Tk 9) — préférez la version pywebview si vous
+pouvez installer une dépendance supplémentaire.
 
 ### Ligne de commande
 
@@ -117,7 +132,14 @@ job_watch/
   config.example.yaml   # modèle de configuration à copier
   config.py               # chargement/sauvegarde config + construction des sources
   main.py                  # point d'entrée ligne de commande
-  gui.py                    # point d'entrée interface graphique (Tkinter)
+  gui.py                    # interface graphique Tkinter (alternative)
+  webapp.py                  # interface graphique pywebview (recommandée)
+  webgui/
+    index.html                 # structure de la page
+    style.css                   # mise en forme
+    script.js                    # logique d'interface (appelle l'API Python)
+  embedded_preview.py     # tentative d'intégration WebView2 dans Tkinter (désactivée)
+  view_ad.py                # fenêtre pywebview autonome pour "Ouvrir en grand" (Tkinter)
   models.py                  # dataclass Job
   store.py                    # suivi des offres déjà traitées (JSON)
   emailer.py                   # génération des brouillons .eml
@@ -129,5 +151,6 @@ job_watch/
     indeed.py                      # scraping HTML
     linkedin.py                     # endpoint public non authentifié
     generic.py                       # site personnalisé piloté par sélecteurs CSS
-run_gui.bat              # lance l'interface graphique (Windows, double-clic)
+run_gui.bat              # lance l'interface Tkinter (Windows, double-clic)
+run_webgui.bat           # lance l'interface pywebview (Windows, double-clic)
 ```
