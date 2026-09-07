@@ -39,10 +39,14 @@ type de contrat, d'activer/désactiver Le Forem, Indeed et LinkedIn, et
 d'**ajouter vos propres sites** (bouton "Ajouter..." dans "Sites
 personnalisés" — voir ci-dessous). L'onglet **Résultats** liste les offres
 trouvées à gauche ; cliquez sur une offre pour afficher son aperçu dans le
-panneau de droite (nécessite `pip install tkinterweb` — sans quoi ce
-panneau reste vide), et utilisez "Ouvrir en grand" pour l'afficher en
-plein format (nécessite `pip install pywebview`, sinon ouvre votre
-navigateur par défaut). Sélectionnez une ou plusieurs offres puis cliquez
+panneau de droite. Ce panneau essaie, dans l'ordre : un vrai navigateur
+Edge intégré (nécessite `pip install pywebview pywin32`, Windows
+uniquement — gère le JavaScript, donc les sites modernes s'affichent
+correctement), puis un moteur HTML léger sans JavaScript (`pip install
+tkinterweb`), puis un simple message si aucun des deux n'est disponible.
+Le bouton "Ouvrir en grand" affiche l'offre en plein format dans une
+fenêtre séparée (utilise aussi pywebview, sinon ouvre votre navigateur
+par défaut). Sélectionnez une ou plusieurs offres puis cliquez
 sur "Préparer un brouillon" ou "Ignorer".
 
 ### Ligne de commande

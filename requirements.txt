@@ -2,13 +2,20 @@ requests
 beautifulsoup4
 PyYAML
 
-# Optionnelle : affiche l'aperçu d'une offre directement dans le panneau
-# de droite de l'onglet Résultats. Sans elle, ce panneau affiche un
-# message et seul le bouton "Ouvrir en grand" (ci-dessous) fonctionne.
-tkinterweb
-
-# Optionnelle : permet au bouton "Ouvrir en grand" d'afficher l'offre dans
-# une fenêtre intégrée à l'application plutôt que dans le navigateur externe
-# (utile pour les sites que l'aperçu ci-dessus n'arrive pas à afficher).
-# Sans elle, ce bouton ouvre simplement le navigateur par défaut.
+# Le panneau d'aperçu de l'onglet Résultats essaie ces options dans
+# l'ordre, et se rabat sur un simple message si aucune ne fonctionne :
+#
+# 1) pywebview + pywin32 (Windows uniquement) : aperçu intégré via un
+#    vrai moteur Edge/Chromium (WebView2), rattaché au panneau par l'API
+#    Win32 — gère le JavaScript correctement, fonctionne quelle que soit
+#    la version de Tcl/Tk installée.
+# 2) tkinterweb : moteur HTML léger, sans dépendance native Windows, mais
+#    sans JavaScript (les sites modernes peuvent s'afficher incomplets) —
+#    et actuellement incompatible avec Tcl/Tk 9 tant que le paquet
+#    tkinterweb-tkhtml n'a pas de version précompilée pour cette version.
+#
+# Le bouton "Ouvrir en grand" utilise aussi pywebview s'il est installé
+# (fenêtre séparée cette fois), sinon ouvre le navigateur par défaut.
 pywebview
+pywin32; sys_platform == "win32"
+tkinterweb

@@ -19,6 +19,7 @@ from tkinter import filedialog, messagebox, ttk
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from job_watch import embedded_preview  # noqa: E402
 from job_watch.config import build_active_sources, load_config, save_config  # noqa: E402
 from job_watch.emailer import save_draft  # noqa: E402
 from job_watch.store import SeenStore  # noqa: E402
@@ -447,25 +448,38 @@ class JobWatchApp:
         scrollbar.pack(side="right", fill="y")
 
         ttk.Label(right, text="Aperçu de l'annonce :").pack(anchor="w", padx=4, pady=(4, 0))
+        self.preview_frame = ttk.Frame(right)
+        self.preview_frame.pack(fill="both", expand=True, padx=4, pady=4)
         self.preview = None
+        self.preview_mode = None
         preview_error = None
-        if HtmlFrame is not None:
+
+        try:
+            if embedded_preview.is_supported() and embedded_preview.embed(
+                self.preview_frame, "about:blank", key="results"
+            ):
+                self.preview_mode = "webview2"
+        except Exception:
+            pass
+
+        if self.preview_mode is None and HtmlFrame is not None:
             try:
                 self.preview = HtmlFrame(
-                    right, messages_enabled=False, threading_enabled=True
+                    self.preview_frame, messages_enabled=False, threading_enabled=True
                 )
+                self.preview.pack(fill="both", expand=True)
+                self.preview.load_html(
+                    "<p style='font-family:sans-serif;color:gray;padding:1em'>"
+                    "Cliquez sur une offre pour afficher son aperçu ici.</p>"
+                )
+                self.preview_mode = "tkinterweb"
             except Exception as exc:  # ex: Tkhtml non compilé pour Tcl/Tk 9
                 preview_error = str(exc)
-        if self.preview is not None:
-            self.preview.pack(fill="both", expand=True, padx=4, pady=4)
-            self.preview.load_html(
-                "<p style='font-family:sans-serif;color:gray;padding:1em'>"
-                "Cliquez sur une offre pour afficher son aperçu ici.</p>"
-            )
-        else:
+
+        if self.preview_mode is None:
             message = (
                 "Aperçu intégré indisponible.\n"
-                "Installez-le avec : pip install tkinterweb\n"
+                "Installez : pip install tkinterweb pywebview pywin32\n"
                 "En attendant, utilisez \"Ouvrir en grand\"."
                 if not preview_error
                 else (
@@ -477,7 +491,11 @@ class JobWatchApp:
                 )
             )
             ttk.Label(
-                right, text=message, foreground="gray", justify="left", wraplength=350
+                self.preview_frame,
+                text=message,
+                foreground="gray",
+                justify="left",
+                wraplength=350,
             ).pack(padx=12, pady=12, anchor="nw")
 
     def _on_select_result(self, _event=None) -> None:
@@ -496,7 +514,12 @@ class JobWatchApp:
             )
         self.detail_text.configure(state="disabled")
 
-        if self.preview is not None:
+        if self.preview_mode == "webview2" and job and job.url:
+            try:
+                embedded_preview.embed(self.preview_frame, job.url, key="results")
+            except Exception as exc:
+                self._log(f"Aperçu impossible pour cette offre : {exc}")
+        elif self.preview_mode == "tkinterweb" and self.preview is not None:
             if job and job.url:
                 try:
                     self.preview.load_url(job.url)
