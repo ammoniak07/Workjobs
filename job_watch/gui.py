@@ -392,6 +392,12 @@ class JobWatchApp:
         ttk.Button(
             btns, text="Ouvrir le dossier des brouillons", command=self._open_drafts
         ).pack(side="left", padx=4)
+        ttk.Button(
+            btns, text="Vider les résultats", command=self._clear_results
+        ).pack(side="left", padx=4)
+        ttk.Button(
+            btns, text="Réinitialiser l'historique", command=self._reset_history
+        ).pack(side="left", padx=4)
 
         ttk.Label(frame, text="Journal :").pack(anchor="w", padx=8)
         log_frame = ttk.Frame(frame)
@@ -553,6 +559,29 @@ class JobWatchApp:
             subprocess.run(["open", str(drafts_dir)])
         else:
             subprocess.run(["xdg-open", str(drafts_dir)])
+
+    def _clear_results(self) -> None:
+        """Vide la liste affichée sans marquer les offres comme traitées :
+        elles pourront réapparaître lors d'une prochaine recherche."""
+        self.results_tree.delete(*self.results_tree.get_children())
+        self.job_by_iid.clear()
+        self._log("Résultats affichés vidés.")
+
+    def _reset_history(self) -> None:
+        seen_path = Path(
+            self.config.get("fichier_suivi", "job_watch/seen_jobs.json")
+        )
+        if not seen_path.exists():
+            messagebox.showinfo("Historique", "Aucun historique à réinitialiser.")
+            return
+        if not messagebox.askyesno(
+            "Réinitialiser l'historique",
+            "Toutes les offres déjà acceptées ou ignorées pourront réapparaître "
+            "lors de la prochaine recherche. Continuer ?",
+        ):
+            return
+        seen_path.unlink()
+        self._log("Historique des offres déjà traitées réinitialisé.")
 
 
 def main() -> None:
