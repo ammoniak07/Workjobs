@@ -13,6 +13,7 @@ import subprocess
 import sys
 import threading
 import tkinter as tk
+import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
@@ -396,6 +397,7 @@ class JobWatchApp:
             self.results_tree.column(col, width=width)
         self.results_tree.pack(fill="both", expand=True, padx=8, pady=6)
         self.results_tree.bind("<<TreeviewSelect>>", self._on_select_result)
+        self.results_tree.bind("<Double-1>", lambda _e: self._view_selected_ad())
 
         self.detail_text = tk.Text(frame, height=5, wrap="word")
         self.detail_text.pack(fill="x", padx=8, pady=4)
@@ -403,6 +405,9 @@ class JobWatchApp:
 
         btns = ttk.Frame(frame)
         btns.pack(fill="x", padx=8, pady=4)
+        ttk.Button(
+            btns, text="Voir l'annonce", command=self._view_selected_ad
+        ).pack(side="left", padx=4)
         ttk.Button(
             btns, text="Préparer un brouillon", command=self._prepare_selected
         ).pack(side="left", padx=4)
@@ -534,6 +539,27 @@ class JobWatchApp:
             for iid in self.results_tree.selection()
             if iid in self.job_by_iid
         ]
+
+    def _view_selected_ad(self) -> None:
+        selected = self._selected_jobs()
+        if not selected:
+            return
+        job = selected[0][1]
+        if not job.url:
+            messagebox.showinfo(
+                "Annonce indisponible", "Cette offre n'a pas de lien enregistré."
+            )
+            return
+        try:
+            subprocess.Popen(
+                [sys.executable, "-m", "job_watch.view_ad", job.url, job.title]
+            )
+        except OSError as exc:
+            self._log(
+                f"Impossible d'ouvrir la fenêtre intégrée ({exc}), "
+                "ouverture dans le navigateur par défaut."
+            )
+            webbrowser.open(job.url)
 
     def _prepare_selected(self) -> None:
         selected = self._selected_jobs()

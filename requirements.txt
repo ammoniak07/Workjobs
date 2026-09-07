@@ -1,3 +1,8 @@
 requests
 beautifulsoup4
 PyYAML
+
+# Optionnelle : permet au bouton "Voir l'annonce" d'ouvrir l'offre dans une
+# fenêtre intégrée à l'application plutôt que dans le navigateur externe.
+# Sans elle, ce bouton ouvre simplement le navigateur par défaut.
+pywebview
