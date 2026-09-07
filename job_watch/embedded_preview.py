@@ -1,12 +1,16 @@
 """Intègre une vraie fenêtre WebView2 (moteur Edge/Chromium) dans un
 widget Tkinter, via l'API Win32 SetParent.
 
-C'est une technique non officielle : pywebview ne prévoit pas d'API pour
-embarquer sa fenêtre dans un widget d'un autre framework, donc ce module
-s'appuie sur des détails internes qui peuvent changer d'une version de
-pywebview à l'autre. Chaque étape est protégée : en cas d'échec, `embed()`
-retourne False et l'appelant doit se rabattre sur autre chose (fenêtre
-séparée classique, ou un autre moteur de rendu).
+DÉSACTIVÉ : les versions récentes de pywebview (>= 6.x) refusent
+explicitement de démarrer leur boucle d'événements ailleurs que sur le
+thread principal ("pywebview must be run on a main thread"), qui est
+déjà occupé par la boucle Tkinter dans cette application. Il n'y a pas
+de contournement propre sans inverser l'architecture complète de l'app
+(faire tourner Tkinter dans un thread secondaire et laisser pywebview
+posséder le thread principal) — trop risqué à faire sans machine Windows
+pour tester. `is_supported()` retourne donc toujours False ; le code
+ci-dessous est conservé au cas où une future version de pywebview
+assouplirait cette contrainte.
 
 Windows uniquement (nécessite pywebview avec le backend "edgechromium",
 et pywin32 pour manipuler les fenêtres natives).
@@ -22,7 +26,7 @@ _windows: dict[str, object] = {}
 
 
 def is_supported() -> bool:
-    return sys.platform.startswith("win")
+    return False and sys.platform.startswith("win")
 
 
 def _ensure_loop_started() -> None:
