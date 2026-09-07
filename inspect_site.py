@@ -38,6 +38,25 @@ def selector_of(tag) -> str | None:
     return f"{tag.name}." + ".".join(classes)
 
 
+def own_or_child_href(tag) -> str:
+    if tag.name == "a" and tag.get("href"):
+        return tag["href"]
+    link = tag.find("a")
+    return link.get("href") if link and link.get("href") else "aucun"
+
+
+def ancestor_chain(tag, depth: int = 4) -> str:
+    chain = []
+    node = tag.parent
+    for _ in range(depth):
+        if node is None or not getattr(node, "name", None) or node.name in ("body", "html"):
+            break
+        sel = selector_of(node) or node.name
+        chain.append(sel)
+        node = node.parent
+    return " < ".join(chain) if chain else "(aucun parent avec classe)"
+
+
 def step1_find_candidates(soup: BeautifulSoup) -> None:
     counter: Counter[str] = Counter()
     examples = {}
@@ -58,11 +77,11 @@ def step1_find_candidates(soup: BeautifulSoup) -> None:
     )
     for sel, count in candidates[:15]:
         tag = examples[sel]
-        link = tag.find("a")
         text_preview = " | ".join(t.strip() for t in tag.stripped_strings if t.strip())[:200]
         print(f"- {sel}  (x{count})")
-        print(f"    lien  : {link.get('href') if link else 'aucun'}")
-        print(f"    texte : {text_preview}")
+        print(f"    lien       : {own_or_child_href(tag)}")
+        print(f"    texte      : {text_preview}")
+        print(f"    parents    : {ancestor_chain(tag)}")
         print()
 
 
@@ -85,6 +104,8 @@ def step2_detail_selector(soup: BeautifulSoup, card_selector: str) -> None:
             continue
         seen.add(key)
         print(f"  {sel:40s} -> {own_text[:80]}")
+    if card.name == "a" and card.get("href"):
+        print(f"\nLa carte elle-même est un lien : href={card['href']}")
     links = card.find_all("a")
     print("\nLiens trouvés dans cette carte :")
     for a in links:
