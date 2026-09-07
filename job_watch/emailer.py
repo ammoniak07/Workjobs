@@ -8,6 +8,13 @@ from .models import Job
 
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "email_template.txt"
 
+DEFAULT_MOTIVATION = (
+    "[Décrivez ici en 2-3 phrases votre profil, votre expérience pertinente "
+    "et votre motivation pour ce poste. Adaptez ce paragraphe à chaque offre "
+    "avant envoi, ou enregistrez un texte par défaut dans l'onglet "
+    "\"Vos informations\".]"
+)
+
 
 def _slugify(text: str, max_len: int = 40) -> str:
     text = re.sub(r"[^\w\s-]", "", text, flags=re.UNICODE).strip().lower()
@@ -27,6 +34,7 @@ def render_draft(job: Job, candidat: dict) -> tuple[str, str]:
         candidat_nom=candidat.get("nom", ""),
         candidat_email=candidat.get("email", ""),
         candidat_telephone=candidat.get("telephone", ""),
+        motivation=candidat.get("motivation", "").strip() or DEFAULT_MOTIVATION,
     )
     subject_line, _, body = rendered.partition("\n")
     subject = subject_line.replace("Objet : ", "", 1).strip()

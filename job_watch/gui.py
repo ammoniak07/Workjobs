@@ -239,8 +239,25 @@ class JobWatchApp:
         ttk.Entry(candidat_box, textvariable=self.cv_path_var, width=30).grid(
             row=1, column=3, sticky="w", padx=6, pady=4
         )
-        ttk.Button(candidat_box, text="Parcourir...", command=self._browse_cv).grid(
-            row=1, column=4, padx=6
+        ttk.Button(
+            candidat_box, text="Importer un CV...", command=self._browse_cv
+        ).grid(row=1, column=4, padx=6)
+
+        ttk.Label(
+            candidat_box, text="Paragraphe de motivation par défaut :"
+        ).grid(row=2, column=0, columnspan=4, sticky="w", padx=6, pady=(10, 0))
+        ttk.Label(
+            candidat_box,
+            text=(
+                "Utilisé dans chaque brouillon à la place du texte à "
+                "compléter. Vous pouvez toujours l'adapter offre par offre "
+                "en éditant le fichier .eml généré."
+            ),
+            foreground="gray",
+        ).grid(row=3, column=0, columnspan=4, sticky="w", padx=6)
+        self.motivation_text = tk.Text(candidat_box, height=4, width=80, wrap="word")
+        self.motivation_text.grid(
+            row=4, column=0, columnspan=5, sticky="we", padx=6, pady=(2, 6)
         )
 
         action_box = ttk.Frame(frame)
@@ -324,6 +341,8 @@ class JobWatchApp:
         self.email_var.set(candidat.get("email", ""))
         self.telephone_var.set(candidat.get("telephone", ""))
         self.cv_path_var.set(candidat.get("cv_path", ""))
+        self.motivation_text.delete("1.0", "end")
+        self.motivation_text.insert("1.0", candidat.get("motivation", ""))
 
         self._refresh_custom_tree()
 
@@ -347,6 +366,7 @@ class JobWatchApp:
             "email": self.email_var.get().strip(),
             "telephone": self.telephone_var.get().strip(),
             "cv_path": self.cv_path_var.get().strip(),
+            "motivation": self.motivation_text.get("1.0", "end").strip(),
         }
         # sites_personnalises est déjà tenu à jour directement dans self.config
         return self.config

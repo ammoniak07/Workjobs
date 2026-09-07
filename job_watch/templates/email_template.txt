@@ -5,9 +5,7 @@ Madame, Monsieur,
 Je me permets de vous contacter suite à la publication de votre offre
 « {title} » ({company}, {location}), repérée sur {source}.
 
-[Décrivez ici en 2-3 phrases votre profil, votre expérience pertinente et
-votre motivation pour ce poste. Adaptez ce paragraphe à chaque offre avant
-envoi.]
+{motivation}
 
 Vous trouverez mon CV ci-joint. Je reste à votre disposition pour un
 entretien à votre convenance.

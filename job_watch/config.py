@@ -6,7 +6,13 @@ from pathlib import Path
 import yaml
 
 DEFAULT_CONFIG: dict = {
-    "candidat": {"nom": "", "email": "", "telephone": "", "cv_path": ""},
+    "candidat": {
+        "nom": "",
+        "email": "",
+        "telephone": "",
+        "cv_path": "",
+        "motivation": "",
+    },
     "recherche": {
         "mots_cles": "",
         "lieu": "",
