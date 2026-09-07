@@ -80,3 +80,45 @@ try:
     print("\nHTML complet sauvegardé dans indeed_debug.html")
 except Exception as exc:
     print("ERREUR :", exc)
+
+print()
+print("=" * 70)
+print("LINKEDIN")
+print("=" * 70)
+url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+
+
+def try_linkedin(label: str, keywords: str, location: str) -> None:
+    params = {"keywords": keywords, "location": location, "start": 0}
+    try:
+        r = requests.get(url, params=params, headers=HEADERS, timeout=20)
+        print(f"\n--- {label} ---")
+        print("URL appelée :", r.url)
+        print("Statut :", r.status_code)
+        print("Longueur HTML :", len(r.text))
+        lowered = r.text.lower()
+        for hint in ["captcha", "verification", "unusual", "blocked", "sign in", "authwall"]:
+            if hint in lowered:
+                print(f"  -> contient le mot '{hint}' (probable page de blocage/connexion)")
+        soup = BeautifulSoup(r.text, "html.parser")
+        cards = soup.select("div.base-card")
+        print(f"  sélecteur 'div.base-card' : {len(cards)} élément(s)")
+        if not r.text.strip():
+            print("  -> réponse VIDE (0 octet)")
+    except Exception as exc:
+        print(f"ERREUR ({label}) :", exc)
+
+
+try_linkedin("mots-clés + 'Bruxelles, Belgique'", "développeur", "Bruxelles, Belgique")
+try_linkedin("mots-clés + 'Belgique' seul", "développeur", "Belgique")
+try_linkedin("mots-clés seuls, sans lieu", "développeur", "")
+
+with open("linkedin_debug.html", "w", encoding="utf-8") as f:
+    r = requests.get(
+        url,
+        params={"keywords": "développeur", "location": "Bruxelles, Belgique", "start": 0},
+        headers=HEADERS,
+        timeout=20,
+    )
+    f.write(r.text)
+print("\nDernière réponse LinkedIn sauvegardée dans linkedin_debug.html")
