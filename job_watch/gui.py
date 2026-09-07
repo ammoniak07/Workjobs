@@ -23,6 +23,11 @@ from job_watch.config import build_active_sources, load_config, save_config  # n
 from job_watch.emailer import save_draft  # noqa: E402
 from job_watch.store import SeenStore  # noqa: E402
 
+try:
+    from tkinterweb import HtmlFrame
+except ImportError:
+    HtmlFrame = None
+
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 SITE_FIELDS = [
@@ -383,15 +388,23 @@ class JobWatchApp:
     def _build_results_tab(self) -> None:
         frame = self.results_tab
 
+        paned = ttk.PanedWindow(frame, orient="horizontal")
+        paned.pack(fill="both", expand=True)
+
+        left = ttk.Frame(paned)
+        right = ttk.Frame(paned)
+        paned.add(left, weight=2)
+        paned.add(right, weight=3)
+
         columns = ("source", "titre", "entreprise", "lieu")
         self.results_tree = ttk.Treeview(
-            frame, columns=columns, show="headings", height=14, selectmode="extended"
+            left, columns=columns, show="headings", height=14, selectmode="extended"
         )
         for col, label, width in [
-            ("source", "Source", 100),
-            ("titre", "Poste", 250),
-            ("entreprise", "Entreprise", 180),
-            ("lieu", "Lieu", 150),
+            ("source", "Source", 90),
+            ("titre", "Poste", 180),
+            ("entreprise", "Entreprise", 130),
+            ("lieu", "Lieu", 110),
         ]:
             self.results_tree.heading(col, text=label)
             self.results_tree.column(col, width=width)
@@ -399,14 +412,14 @@ class JobWatchApp:
         self.results_tree.bind("<<TreeviewSelect>>", self._on_select_result)
         self.results_tree.bind("<Double-1>", lambda _e: self._view_selected_ad())
 
-        self.detail_text = tk.Text(frame, height=5, wrap="word")
+        self.detail_text = tk.Text(left, height=4, wrap="word")
         self.detail_text.pack(fill="x", padx=8, pady=4)
         self.detail_text.configure(state="disabled")
 
-        btns = ttk.Frame(frame)
+        btns = ttk.Frame(left)
         btns.pack(fill="x", padx=8, pady=4)
         ttk.Button(
-            btns, text="Voir l'annonce", command=self._view_selected_ad
+            btns, text="Ouvrir en grand", command=self._view_selected_ad
         ).pack(side="left", padx=4)
         ttk.Button(
             btns, text="Préparer un brouillon", command=self._prepare_selected
@@ -424,29 +437,65 @@ class JobWatchApp:
             btns, text="Réinitialiser l'historique", command=self._reset_history
         ).pack(side="left", padx=4)
 
-        ttk.Label(frame, text="Journal :").pack(anchor="w", padx=8)
-        log_frame = ttk.Frame(frame)
+        ttk.Label(left, text="Journal :").pack(anchor="w", padx=8)
+        log_frame = ttk.Frame(left)
         log_frame.pack(fill="both", expand=True, padx=8, pady=(0, 8))
-        self.log_text = tk.Text(log_frame, height=8, state="disabled")
+        self.log_text = tk.Text(log_frame, height=6, state="disabled")
         scrollbar = ttk.Scrollbar(log_frame, command=self.log_text.yview)
         self.log_text.configure(yscrollcommand=scrollbar.set)
         self.log_text.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
+        ttk.Label(right, text="Aperçu de l'annonce :").pack(anchor="w", padx=4, pady=(4, 0))
+        if HtmlFrame is not None:
+            self.preview = HtmlFrame(
+                right, messages_enabled=False, threading_enabled=True
+            )
+            self.preview.pack(fill="both", expand=True, padx=4, pady=4)
+            self.preview.load_html(
+                "<p style='font-family:sans-serif;color:gray;padding:1em'>"
+                "Cliquez sur une offre pour afficher son aperçu ici.</p>"
+            )
+        else:
+            self.preview = None
+            ttk.Label(
+                right,
+                text=(
+                    "Aperçu intégré indisponible.\n"
+                    "Installez-le avec : pip install tkinterweb\n"
+                    "En attendant, utilisez \"Ouvrir en grand\"."
+                ),
+                foreground="gray",
+                justify="left",
+            ).pack(padx=12, pady=12, anchor="nw")
+
     def _on_select_result(self, _event=None) -> None:
         selection = self.results_tree.selection()
         self.detail_text.configure(state="normal")
         self.detail_text.delete("1.0", "end")
+        job = None
         if len(selection) == 1:
             job = self.job_by_iid.get(selection[0])
-            if job:
-                self.detail_text.insert(
-                    "end",
-                    f"Lien : {job.url or '(indisponible)'}\n"
-                    f"Type de contrat : {job.contract_type or '(non précisé)'}\n"
-                    f"{job.description}",
-                )
+        if job:
+            self.detail_text.insert(
+                "end",
+                f"Lien : {job.url or '(indisponible)'}\n"
+                f"Type de contrat : {job.contract_type or '(non précisé)'}\n"
+                f"{job.description}",
+            )
         self.detail_text.configure(state="disabled")
+
+        if self.preview is not None:
+            if job and job.url:
+                try:
+                    self.preview.load_url(job.url)
+                except Exception as exc:  # tkinterweb peut lever divers types selon la page
+                    self._log(f"Aperçu impossible pour cette offre : {exc}")
+            elif not job:
+                self.preview.load_html(
+                    "<p style='font-family:sans-serif;color:gray;padding:1em'>"
+                    "Sélectionnez une seule offre pour afficher son aperçu.</p>"
+                )
 
     def _log(self, text: str) -> None:
         self.log_text.configure(state="normal")

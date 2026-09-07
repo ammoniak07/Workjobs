@@ -2,7 +2,13 @@ requests
 beautifulsoup4
 PyYAML
 
-# Optionnelle : permet au bouton "Voir l'annonce" d'ouvrir l'offre dans une
-# fenêtre intégrée à l'application plutôt que dans le navigateur externe.
+# Optionnelle : affiche l'aperçu d'une offre directement dans le panneau
+# de droite de l'onglet Résultats. Sans elle, ce panneau affiche un
+# message et seul le bouton "Ouvrir en grand" (ci-dessous) fonctionne.
+tkinterweb
+
+# Optionnelle : permet au bouton "Ouvrir en grand" d'afficher l'offre dans
+# une fenêtre intégrée à l'application plutôt que dans le navigateur externe
+# (utile pour les sites que l'aperçu ci-dessus n'arrive pas à afficher).
 # Sans elle, ce bouton ouvre simplement le navigateur par défaut.
 pywebview

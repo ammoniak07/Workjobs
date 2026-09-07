@@ -38,8 +38,12 @@ Sous Windows, un double-clic sur `run_gui.bat` fait la même chose. L'onglet
 type de contrat, d'activer/désactiver Le Forem, Indeed et LinkedIn, et
 d'**ajouter vos propres sites** (bouton "Ajouter..." dans "Sites
 personnalisés" — voir ci-dessous). L'onglet **Résultats** liste les offres
-trouvées ; sélectionnez-en une (ou plusieurs) puis cliquez sur "Préparer un
-brouillon" ou "Ignorer".
+trouvées à gauche ; cliquez sur une offre pour afficher son aperçu dans le
+panneau de droite (nécessite `pip install tkinterweb` — sans quoi ce
+panneau reste vide), et utilisez "Ouvrir en grand" pour l'afficher en
+plein format (nécessite `pip install pywebview`, sinon ouvre votre
+navigateur par défaut). Sélectionnez une ou plusieurs offres puis cliquez
+sur "Préparer un brouillon" ou "Ignorer".
 
 ### Ligne de commande
 
