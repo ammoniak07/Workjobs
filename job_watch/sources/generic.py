@@ -17,6 +17,20 @@ DEFAULT_HEADERS = {
 }
 
 
+def _select_nth(scope, selector: str, index: int):
+    """Comme select_one, mais permet de choisir la Nième occurrence
+    (0 = la première) quand un même sélecteur CSS matche plusieurs
+    éléments dans la carte (fréquent sur les sites générés avec des
+    classes utilitaires type Tailwind, réutilisées pour plusieurs champs
+    différents)."""
+    if not selector:
+        return None
+    matches = scope.select(selector)
+    if index < len(matches):
+        return matches[index]
+    return None
+
+
 class GenericSource(JobSource):
     """Site d'offres d'emploi ajouté par l'utilisateur (sans code dédié),
     piloté uniquement par des sélecteurs CSS renseignés dans la config.
@@ -28,11 +42,20 @@ class GenericSource(JobSource):
                           comme emplacements à remplacer, ex :
                           "https://exemple.com/emplois?q={mots_cles}&l={lieu}"
       base_url         : préfixe à ajouter si les liens trouvés sont relatifs
-      selecteur_carte  : sélecteur CSS du conteneur répété d'une offre
-      selecteur_titre  : sélecteur CSS (relatif à la carte) du titre
-      selecteur_entreprise : sélecteur CSS de l'entreprise (optionnel)
-      selecteur_lieu   : sélecteur CSS du lieu (optionnel)
-      selecteur_lien   : sélecteur CSS du lien <a> vers l'offre (défaut "a")
+      selecteur_carte  : sélecteur CSS du conteneur répété d'une offre.
+                          Peut être un sélecteur d'attribut, ex :
+                          'a[href*="/offre/"]' quand la carte est elle-même
+                          le lien vers l'offre.
+      selecteur_titre / selecteur_entreprise / selecteur_lieu / selecteur_lien :
+                          sélecteurs CSS relatifs à la carte. Si le même
+                          sélecteur matche plusieurs éléments dans la carte
+                          (ex: deux <div> avec la même classe, l'un pour
+                          l'entreprise, l'autre pour le lieu), ajoutez
+                          selecteur_xxx_index (0 = premier, 1 = second...)
+                          pour désambiguïser.
+                          selecteur_lien peut être laissé vide : dans ce
+                          cas, si la carte elle-même est un lien <a>, son
+                          href est utilisé directement.
     """
 
     def __init__(self, source_config: dict):
@@ -82,20 +105,29 @@ class GenericSource(JobSource):
         title_sel = self.config.get("selecteur_titre", "")
         company_sel = self.config.get("selecteur_entreprise", "")
         location_sel = self.config.get("selecteur_lieu", "")
-        link_sel = self.config.get("selecteur_lien", "a")
+        link_sel = self.config.get("selecteur_lien", "")
+        title_idx = int(self.config.get("selecteur_titre_index", 0) or 0)
+        company_idx = int(self.config.get("selecteur_entreprise_index", 0) or 0)
+        location_idx = int(self.config.get("selecteur_lieu_index", 0) or 0)
+        link_idx = int(self.config.get("selecteur_lien_index", 0) or 0)
         max_resultats = criteria.get("max_resultats", 20)
 
         jobs: list[Job] = []
         for card in cards[:max_resultats]:
-            title_el = card.select_one(title_sel) if title_sel else None
-            company_el = card.select_one(company_sel) if company_sel else None
-            location_el = card.select_one(location_sel) if location_sel else None
-            link_el = card.select_one(link_sel) if link_sel else None
+            title_el = _select_nth(card, title_sel, title_idx)
+            company_el = _select_nth(card, company_sel, company_idx)
+            location_el = _select_nth(card, location_sel, location_idx)
+            link_el = _select_nth(card, link_sel, link_idx) if link_sel else None
 
-            if not title_el or not link_el or not link_el.get("href"):
+            href = None
+            if link_el is not None and link_el.get("href"):
+                href = link_el["href"]
+            elif card.name == "a" and card.get("href"):
+                href = card["href"]
+
+            if not title_el or not href:
                 continue
 
-            href = link_el["href"]
             full_url = href if href.startswith("http") else f"{base_url}{href}"
 
             jobs.append(
