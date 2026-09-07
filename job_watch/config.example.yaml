@@ -23,5 +23,22 @@ sources:
   linkedin:
     active: true
 
+# Sites additionnels, sans code dédié : il suffit de fournir l'URL de
+# recherche et les sélecteurs CSS de la page de résultats. Le plus simple
+# pour les remplir est de passer par l'interface graphique
+# (python -m job_watch.gui), qui a un formulaire dédié. Exemple :
+#
+# sites_personnalises:
+#   - nom: "MonSite"
+#     active: true
+#     url_recherche: "https://exemple.com/emplois?q={mots_cles}&l={lieu}"
+#     base_url: "https://exemple.com"        # préfixe pour les liens relatifs
+#     selecteur_carte: "div.job-card"        # une carte = une offre
+#     selecteur_titre: "h2.title"
+#     selecteur_entreprise: ".company"
+#     selecteur_lieu: ".location"
+#     selecteur_lien: "a"
+sites_personnalises: []
+
 dossier_brouillons: "job_watch/drafts"
 fichier_suivi: "job_watch/seen_jobs.json"

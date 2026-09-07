@@ -1,3 +1,4 @@
+from .generic import GenericSource
 from .indeed import IndeedSource
 from .leforem import LeForemSource
 from .linkedin import LinkedInSource
@@ -8,4 +9,10 @@ SOURCE_CLASSES = {
     "linkedin": LinkedInSource,
 }
 
-__all__ = ["SOURCE_CLASSES", "IndeedSource", "LeForemSource", "LinkedInSource"]
+__all__ = [
+    "SOURCE_CLASSES",
+    "GenericSource",
+    "IndeedSource",
+    "LeForemSource",
+    "LinkedInSource",
+]

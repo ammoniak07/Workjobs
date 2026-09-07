@@ -27,14 +27,53 @@ zone géographique, et les sources à activer.
 
 ## Utilisation
 
+### Interface graphique (recommandé)
+
+```bash
+python -m job_watch.gui
+```
+
+Sous Windows, un double-clic sur `run_gui.bat` fait la même chose. L'onglet
+**Recherche & sites** permet de saisir le poste recherché, la région, le
+type de contrat, d'activer/désactiver Le Forem, Indeed et LinkedIn, et
+d'**ajouter vos propres sites** (bouton "Ajouter..." dans "Sites
+personnalisés" — voir ci-dessous). L'onglet **Résultats** liste les offres
+trouvées ; sélectionnez-en une (ou plusieurs) puis cliquez sur "Préparer un
+brouillon" ou "Ignorer".
+
+### Ligne de commande
+
 ```bash
 python -m job_watch.main
 ```
 
 (ou `python job_watch/main.py` depuis la racine du dépôt)
 
-À chaque exécution, seules les offres pas encore vues sont proposées (le
-suivi est stocké dans `job_watch/seen_jobs.json`).
+Pour chaque nouvelle offre, répondez **o**ui / **n**on / **q**uitter.
+
+Dans les deux cas, la configuration est lue/écrite dans
+`job_watch/config.yaml` (copiez `job_watch/config.example.yaml` la première
+fois, ou laissez l'interface graphique le faire pour vous). À chaque
+exécution, seules les offres pas encore vues sont proposées (le suivi est
+stocké dans `job_watch/seen_jobs.json`) — ce suivi est partagé entre
+l'interface graphique et la ligne de commande.
+
+### Ajouter un site de recherche d'emploi
+
+En plus de Le Forem, Indeed et LinkedIn (intégrés), vous pouvez ajouter
+n'importe quel autre site sans toucher au code : dans l'interface
+graphique, "Sites personnalisés" → "Ajouter...", ou directement dans
+`config.yaml` sous `sites_personnalises` (voir l'exemple commenté dans
+`config.example.yaml`). Il faut fournir :
+
+- l'URL de recherche du site, avec `{mots_cles}` et `{lieu}` à la place du
+  poste et de la région (ex : `https://exemple.com/emplois?q={mots_cles}&l={lieu}`),
+- les sélecteurs CSS de la page de résultats : le conteneur d'une offre,
+  et à l'intérieur le titre, l'entreprise, le lieu et le lien.
+
+Ces sélecteurs s'obtiennent en ouvrant la page de résultats du site dans un
+navigateur, clic droit sur une offre → "Inspecter", pour repérer les
+classes CSS utilisées.
 
 ## Limites importantes à connaître
 
@@ -68,15 +107,19 @@ suivi est stocké dans `job_watch/seen_jobs.json`).
 ```
 job_watch/
   config.example.yaml   # modèle de configuration à copier
-  main.py                # point d'entrée
-  models.py               # dataclass Job
-  store.py                 # suivi des offres déjà traitées (JSON)
-  emailer.py               # génération des brouillons .eml
+  config.py               # chargement/sauvegarde config + construction des sources
+  main.py                  # point d'entrée ligne de commande
+  gui.py                    # point d'entrée interface graphique (Tkinter)
+  models.py                  # dataclass Job
+  store.py                    # suivi des offres déjà traitées (JSON)
+  emailer.py                   # génération des brouillons .eml
   templates/
-    email_template.txt     # modèle du corps de l'e-mail
+    email_template.txt          # modèle du corps de l'e-mail
   sources/
-    base.py                 # interface commune
-    leforem.py               # API Open Data du Forem
-    indeed.py                 # scraping HTML
-    linkedin.py                # endpoint public non authentifié
+    base.py                      # interface commune
+    leforem.py                    # API Open Data du Forem
+    indeed.py                      # scraping HTML
+    linkedin.py                     # endpoint public non authentifié
+    generic.py                       # site personnalisé piloté par sélecteurs CSS
+run_gui.bat              # lance l'interface graphique (Windows, double-clic)
 ```

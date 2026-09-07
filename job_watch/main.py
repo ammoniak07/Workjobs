@@ -5,24 +5,11 @@ import sys
 import textwrap
 from pathlib import Path
 
-import yaml
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from job_watch.config import build_active_sources, load_config  # noqa: E402
 from job_watch.emailer import render_draft, save_draft  # noqa: E402
-from job_watch.sources import SOURCE_CLASSES  # noqa: E402
 from job_watch.store import SeenStore  # noqa: E402
-
-
-def load_config(path: Path) -> dict:
-    if not path.exists():
-        example = path.parent / "config.example.yaml"
-        sys.exit(
-            f"Fichier de config introuvable : {path}\n"
-            f"Copiez {example} vers {path} puis personnalisez-le."
-        )
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
 
 
 def matches_contract_type(job, type_contrat: str) -> bool:
@@ -58,7 +45,8 @@ def main() -> None:
         description=textwrap.dedent(
             """
             Scanne plusieurs sites d'offres d'emploi (Le Forem, Indeed,
-            LinkedIn) selon les critères de config.yaml, et pour chaque
+            LinkedIn, plus tout site personnalisé ajouté dans config.yaml)
+            selon les critères de config.yaml, et pour chaque
             nouvelle offre propose de préparer un brouillon de candidature
             (fichier .eml) dans le dossier de brouillons. Aucun e-mail
             n'est jamais envoyé automatiquement : c'est vous qui relisez,
@@ -73,7 +61,15 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    config = load_config(Path(args.config))
+    config_path = Path(args.config)
+    if not config_path.exists():
+        example = config_path.parent / "config.example.yaml"
+        sys.exit(
+            f"Fichier de config introuvable : {config_path}\n"
+            f"Copiez {example} vers {config_path} puis personnalisez-le "
+            "(ou utilisez l'interface graphique : python -m job_watch.gui)."
+        )
+    config = load_config(config_path)
     candidat = config.get("candidat", {})
     recherche = config.get("recherche", {})
     criteria = {
@@ -86,14 +82,12 @@ def main() -> None:
     store = SeenStore(config.get("fichier_suivi", "job_watch/seen_jobs.json"))
     drafts_dir = config.get("dossier_brouillons", "job_watch/drafts")
 
-    sources_config = config.get("sources", {})
-    active_sources = [
-        SOURCE_CLASSES[name](cfg)
-        for name, cfg in sources_config.items()
-        if cfg.get("active") and name in SOURCE_CLASSES
-    ]
+    active_sources = build_active_sources(config)
     if not active_sources:
-        sys.exit("Aucune source active dans config.yaml (section 'sources').")
+        sys.exit(
+            "Aucune source active dans config.yaml (sections 'sources' / "
+            "'sites_personnalises')."
+        )
 
     all_jobs = []
     for source in active_sources:
