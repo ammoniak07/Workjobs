@@ -1,0 +1,27 @@
+# Copiez ce fichier en "config.yaml" (dans le même dossier) puis
+# personnalisez les valeurs ci-dessous. config.yaml n'est jamais commité
+# (voir .gitignore) car il contient vos coordonnées personnelles.
+
+candidat:
+  nom: "Prénom Nom"
+  email: "vous@example.com"
+  telephone: ""
+  cv_path: ""  # ex: "C:/Users/moi/Documents/CV.pdf" — optionnel, joint aux brouillons si renseigné
+
+recherche:
+  mots_cles: "développeur python"
+  lieu: "Bruxelles"
+  type_contrat: ""  # ex: "CDI" — laisser vide pour ne pas filtrer
+  max_resultats_par_source: 20
+
+sources:
+  leforem:
+    active: true
+  indeed:
+    active: true
+    domaine: "fr.indeed.com"  # ou "be.indeed.com" pour la Belgique
+  linkedin:
+    active: true
+
+dossier_brouillons: "job_watch/drafts"
+fichier_suivi: "job_watch/seen_jobs.json"

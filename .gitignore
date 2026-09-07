@@ -1,0 +1,16 @@
+# Environnement Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Config personnelle (coordonnées, CV) et données générées
+job_watch/config.yaml
+job_watch/drafts/
+job_watch/seen_jobs.json
+
+# Éditeurs / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
