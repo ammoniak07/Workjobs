@@ -7,7 +7,12 @@ PyYAML
 # des annonces en iframe — dans une fenêtre Edge/Chromium (comme
 # NovaVox). Optionnel pour la version Tkinter (job_watch/gui.py), où il
 # sert seulement au bouton "Ouvrir en grand".
-pywebview
+#
+# Plafonné comme dans NovaVox (voir son requirements.txt) : les versions
+# récentes (5.3+) ont des bugs connus de blocage/deadlock du thread
+# d'interface sous Windows avec le backend EdgeChromium (voir
+# https://github.com/r0x0r/pywebview/issues/1823 par exemple).
+pywebview<5.3
 
 # Optionnelles, seulement pour la version Tkinter (job_watch/gui.py) :
 # le panneau d'aperçu intégré y essaie tkinterweb (moteur HTML léger,
