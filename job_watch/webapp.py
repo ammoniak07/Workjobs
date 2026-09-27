@@ -180,9 +180,10 @@ class Api:
 
 def main() -> None:
     api = Api()
+    index_url = (WEBGUI_DIR / "index.html").resolve().as_uri()
     window = webview.create_window(
         "Workjobs — recherche d'emploi",
-        str(WEBGUI_DIR / "index.html"),
+        index_url,
         js_api=api,
         width=1200,
         height=800,
