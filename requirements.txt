@@ -8,11 +8,12 @@ PyYAML
 # NovaVox). Optionnel pour la version Tkinter (job_watch/gui.py), où il
 # sert seulement au bouton "Ouvrir en grand".
 #
-# Plafonné comme dans NovaVox (voir son requirements.txt) : les versions
-# récentes (5.3+) ont des bugs connus de blocage/deadlock du thread
-# d'interface sous Windows avec le backend EdgeChromium (voir
-# https://github.com/r0x0r/pywebview/issues/1823 par exemple).
-pywebview<5.3
+# NovaVox plafonne cette dépendance à <5.3, mais sur ce poste c'est
+# l'inverse qui a été constaté : la 5.2 affiche une page blanche même
+# pour une simple URL externe, alors que la dernière version (6.x)
+# affiche correctement le contenu. Ne pas replafonner sans avoir
+# revérifié sur la machine cible.
+pywebview
 
 # Optionnelles, seulement pour la version Tkinter (job_watch/gui.py) :
 # le panneau d'aperçu intégré y essaie tkinterweb (moteur HTML léger,

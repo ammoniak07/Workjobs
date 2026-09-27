@@ -48,7 +48,7 @@ class Api:
     def __init__(self) -> None:
         self.config = load_config(CONFIG_PATH)
         self.jobs_by_id: dict[str, Job] = {}
-        self.window = None  # renseigné juste après webview.create_window()
+        self._window = None  # renseigné juste après webview.create_window()
 
     # ------------------------------------------------------------------
     # Configuration
@@ -62,9 +62,9 @@ class Api:
         return True
 
     def browse_cv(self):
-        if not self.window:
+        if not self._window:
             return None
-        result = self.window.create_file_dialog(
+        result = self._window.create_file_dialog(
             webview.FileDialog.OPEN,
             file_types=("Fichiers PDF (*.pdf)", "Tous les fichiers (*.*)"),
         )
@@ -136,10 +136,10 @@ class Api:
         self._call_js("onSearchDone", [_job_to_dict(j) for j in new_jobs])
 
     def _call_js(self, func_name: str, payload) -> None:
-        if not self.window:
+        if not self._window:
             return
         try:
-            self.window.evaluate_js(f"{func_name}({json.dumps(payload)})")
+            self._window.evaluate_js(f"{func_name}({json.dumps(payload)})")
         except Exception:
             pass
 
@@ -188,7 +188,7 @@ def main() -> None:
         width=1200,
         height=800,
     )
-    api.window = window
+    api._window = window
     webview.start()
 
 
