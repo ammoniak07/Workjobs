@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import unicodedata
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -20,6 +22,11 @@ DEFAULT_HEADERS = {
 # LinkedIn : sa disponibilité et sa structure peuvent changer sans
 # préavis. À utiliser avec modération (pas d'appels en boucle rapprochée).
 SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+
+
+def _normalize(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in text if not unicodedata.combining(c)).lower()
 
 
 class LinkedInSource(JobSource):
@@ -80,4 +87,26 @@ class LinkedInSource(JobSource):
                     raw_id=link_el["href"].split("?")[0],
                 )
             )
+
+        # Filtre de confiance : ce point d'accès non officiel bascule parfois
+        # discrètement vers des résultats génériques (sans tenir compte des
+        # mots-clés) plutôt que de bloquer franchement, surtout après un usage
+        # intensif. Si aucune offre ne contient un seul mot-clé recherché,
+        # on considère le lot entier comme suspect et on l'ignore plutôt que
+        # de polluer les résultats.
+        mots_cles = criteria.get("mots_cles", "")
+        keywords = [w for w in _normalize(mots_cles).split() if len(w) >= 3]
+        if jobs and keywords:
+            matching = [
+                j for j in jobs if any(kw in _normalize(j.title) for kw in keywords)
+            ]
+            if not matching:
+                print(
+                    "[linkedin] Les offres reçues ne contiennent aucun des "
+                    "mots-clés recherchés : LinkedIn renvoie probablement du "
+                    "contenu générique (point d'accès invité dégradé après "
+                    "usage intensif). Résultats ignorés, réessayez plus tard."
+                )
+                return []
+
         return jobs
