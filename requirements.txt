@@ -20,3 +20,8 @@ pywebview
 # sans JavaScript, et actuellement incompatible avec Tcl/Tk 9) puis se
 # rabat sur un simple message si indisponible.
 tkinterweb
+
+
+git pull
+pip install -r requirements.txt --upgrade
+python -m job_watch.webapp
